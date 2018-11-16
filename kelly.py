@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+import datetime
+
 
 #highlights in red if there were no changes in impressions values
 def highlight_nochange(s,threshold,column):
     nochange = pd.Series(data=False, index=s.index)
-    nochange[column] = s.loc[column] = threshold
-
-    return ['' if nochange.any() else 'background-color: black' for v in nochange]
+    nochange[column] = s.loc[column] == threshold
+    return ['background-color: red' if nochange.any() else '' for v in nochange]
 
 
 
 
 #read in files
-dfyesterday = pd.read_csv(r'C:\Users\kecia\kellyads\campaignsprev.csv')
-dftoday = pd.read_csv(r'C:\Users\kecia\kellyads\campaigns.csv')
+dfyesterday = pd.read_csv(r'C:\Users\kecia\kellyads\campaigns11122018.csv')
+dftoday = pd.read_csv(r'C:\Users\kecia\kellyads\campaigns11152018.csv')
 
 #declare empty pandas frame for holding the final data
 dfcombined=pd.DataFrame()
@@ -64,7 +65,7 @@ for index, row in dftodayrun.iterrows():
                 dfcombined=dfcombined.append({'Change':'Yes','Campaign Name':row['Campaign Name'],'Start Date':row['Start Date'],'Budget':deltabudget,
                                              'Spend':deltaspend,'Impressions':deltaimpressions,
                                              'Clicks':deltaclicks,'Total Sales':row['Total Sales'],
-                                             'Net Profit':,'Profit/click':profitclick},ignore_index=True)
+                                             'Net Profit':deltanetprofit,'Profit/click':deltaprofitclick},ignore_index=True)
     except:
        pass
              
@@ -75,6 +76,7 @@ dfcombined=dfcombined[['Change','Campaign Name','Start Date','Budget','Spend','I
 html = dfcombined.style.apply(highlight_nochange,threshold='No',column=['Change'], axis=1).render()
 #dfcombined.to_html()
 
-
-with open(r'C:\Users\kecia\kellyads\out.html', 'w') as f:
+outfile=r'\out.%s.html' % datetime.datetime.today()
+outdir=r'C:\Users\kecia\kellyads'
+with open(r'C:\Users\kecia\kellyads/out.%s.html' % datetime.datetime.today().strftime('%Y-%m-%d'), 'w') as f:
     f.write(html)
